@@ -142,8 +142,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: FONT_SIZES.lg,
-    fontFamily: FONTS.bold,
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.medium,
+    color: COLORS.textSecondary,
     marginLeft: SPACING.sm,
   },
   pagination: {
@@ -207,21 +207,21 @@ const styles = StyleSheet.create({
   },
   readButtonText: {
     fontSize: FONT_SIZES.sm,
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.medium,
     color: COLORS.primary,
     marginRight: 4,
   },
   emptyQuoteCard: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.xxl,
+    paddingVertical: SPACING.xl,
     alignItems: 'center',
     marginHorizontal: SPACING.base,
     ...SHADOWS.medium,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.lg,
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.bold,
     color: COLORS.textSecondary,
     marginTop: SPACING.md,
     marginBottom: SPACING.xs,

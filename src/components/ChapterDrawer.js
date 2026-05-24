@@ -6,10 +6,10 @@ import {
   Modal,
   TouchableOpacity,
   FlatList,
-  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, FONT_SIZES, SPACING, BORDER_RADIUS } from '../theme';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const ChapterDrawer = ({ visible, chapters, currentChapter, onSelectChapter, onClose }) => {
   const renderChapterItem = ({ item, index }) => {
@@ -49,15 +49,15 @@ const ChapterDrawer = ({ visible, chapters, currentChapter, onSelectChapter, onC
       transparent={false}
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaProvider style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Ionicons name="list" size={24} color={COLORS.textPrimary} />
+            <Ionicons name="list" size={24} color={COLORS.textInverse} />
             <Text style={styles.headerTitle}>Chapters</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={28} color={COLORS.textPrimary} />
+            <Ionicons name="close" size={28} color={COLORS.textInverse} />
           </TouchableOpacity>
         </View>
 
@@ -69,7 +69,7 @@ const ChapterDrawer = ({ visible, chapters, currentChapter, onSelectChapter, onC
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
-      </SafeAreaView>
+      </SafeAreaProvider>
     </Modal>
   );
 };
@@ -77,17 +77,16 @@ const ChapterDrawer = ({ visible, chapters, currentChapter, onSelectChapter, onC
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.backgroundDark,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingHorizontal: SPACING.base,
     paddingVertical: SPACING.base,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.backgroundDark,
+    height: 80,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FONT_SIZES.xl,
     fontFamily: FONTS.bold,
-    color: COLORS.textPrimary,
+    color: COLORS.textInverse,
     marginLeft: SPACING.md,
   },
   closeButton: {
@@ -109,12 +108,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.surfaceDark,
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.base,
     marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
   },
   activeChapterItem: {
     backgroundColor: `${COLORS.primary}10`,
@@ -129,7 +126,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: BORDER_RADIUS.md,
-    backgroundColor: COLORS.divider,
+    backgroundColor: COLORS.backgroundDark,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
@@ -140,7 +137,7 @@ const styles = StyleSheet.create({
   chapterNumberText: {
     fontSize: FONT_SIZES.base,
     fontFamily: FONTS.bold,
-    color: COLORS.textSecondary,
+    color: COLORS.textInverse,
   },
   activeChapterNumberText: {
     color: COLORS.textInverse,
@@ -151,11 +148,11 @@ const styles = StyleSheet.create({
   chapterTitle: {
     fontSize: FONT_SIZES.base,
     fontFamily: FONTS.medium,
-    color: COLORS.textPrimary,
+    color: COLORS.textInverse,
     lineHeight: FONT_SIZES.base * 1.4,
   },
   activeChapterTitle: {
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.medium,
     color: COLORS.primary,
   },
 });

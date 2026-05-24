@@ -4,7 +4,8 @@ import { Platform } from 'react-native';
 // Configure notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,   
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -62,6 +63,7 @@ export const scheduleDailyReminders = async () => {
           data: { type: 'daily_reminder' },
         },
         trigger: {
+          channelId: 'reading-reminders',
           hour: reminder.hour,
           minute: reminder.minute,
           repeats: true,
@@ -84,14 +86,15 @@ export const cancelTodaysReminders = async () => {
     const now = new Date();
     
     for (const notification of scheduledNotifications) {
-      if (notification.trigger && notification.trigger.type === 'daily') {
-        const triggerHour = notification.trigger.hour;
+      // Check the DATA object instead of the trigger type
+      if (notification.content.data?.type === 'daily_reminder') {
+        const trigger = notification.trigger;
         
-        // Cancel if the notification is scheduled for later today
-        if (triggerHour > now.getHours()) {
-          await Notifications.cancelScheduledNotificationAsync(
-            notification.identifier
-          );
+        // Ensure it's a calendar/daily trigger before checking the hour
+        if (trigger.hour !== undefined) {
+          if (trigger.hour > now.getHours()) {
+            await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+          }
         }
       }
     }

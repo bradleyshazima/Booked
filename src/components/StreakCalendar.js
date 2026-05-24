@@ -100,6 +100,10 @@ const styles = StyleSheet.create({
   dayContainer: {
     alignItems: 'center',
     flex: 1,
+    backgroundColor: COLORS.surfaceDark,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+    marginHorizontal: SPACING.xs / 2,
   },
   dayName: {
     fontSize: FONT_SIZES.xs,
@@ -112,10 +116,10 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bold,
   },
   dayCircle: {
-    width: 44,
-    height: 44,
+    width: 36,
+    height: 36,
     borderRadius: BORDER_RADIUS.round,
-    backgroundColor: COLORS.divider,
+    backgroundColor: COLORS.backgroundDark,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4,
@@ -132,7 +136,7 @@ const styles = StyleSheet.create({
   },
   dayNumber: {
     fontSize: FONT_SIZES.base,
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.medium,
     color: COLORS.textSecondary,
   },
   partialDot: {
@@ -148,11 +152,9 @@ const styles = StyleSheet.create({
   },
   legend: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     gap: SPACING.base,
-    paddingTop: SPACING.base,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    paddingHorizontal: SPACING.base,
   },
   legendItem: {
     flexDirection: 'row',

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -13,6 +12,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { getAllBooks, getStreaksForDays } from '../db/db';
 import StreakCalendar from '../components/StreakCalendar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { COLORS, FONTS, BORDER_RADIUS } from '../theme';
+
 
 const ProgressScreen = () => {
   const { theme, currentStreak, calculateStreak, dailyGoal } = useApp();
@@ -72,22 +74,22 @@ const ProgressScreen = () => {
   };
 
   const StatCard = ({ icon, value, label, color }) => (
-    <View style={[styles.statCard, { backgroundColor: theme.secondaryColor }]}>
+    <View style={[styles.statCard, { backgroundColor: COLORS.surfaceDark }]}>
       <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
         <Ionicons name={icon} size={32} color={color} />
       </View>
-      <Text style={[styles.statValue, { color: theme.textColor }]}>{value}</Text>
-      <Text style={[styles.statLabel, { color: theme.textColor }]}>{label}</Text>
+      <Text style={[styles.statValue, { color: COLORS.textInverse }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: COLORS.textSecondary }]}>{label}</Text>
     </View>
   );
 
   const MasteredBookItem = ({ book }) => (
-    <View style={[styles.masteredItem, { backgroundColor: theme.secondaryColor }]}>
+    <View style={[styles.masteredItem, { backgroundColor: COLORS.surfaceDark }]}>
       <View style={styles.masteredInfo}>
-        <Text style={[styles.masteredTitle, { color: theme.textColor }]} numberOfLines={1}>
+        <Text style={[styles.masteredTitle, { color: COLORS.textPrimary }]} numberOfLines={1}>
           {book.title}
         </Text>
-        <Text style={[styles.masteredMeta, { color: theme.accentColor }]}>
+        <Text style={[styles.masteredMeta, { color: COLORS.textSecondary }]}>
           {book.times_read > 1 ? `Read ${book.times_read} times` : 'Read 1 time'}
         </Text>
       </View>
@@ -96,7 +98,7 @@ const ProgressScreen = () => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundColor }]}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: COLORS.backgroundDark }]}>
       <ScrollView
         refreshControl={
           <RefreshControl
@@ -116,7 +118,7 @@ const ProgressScreen = () => {
             </Text>
           </View>
           
-          <View style={[styles.streakCard, { backgroundColor: theme.secondaryColor }]}>
+          <View style={[styles.streakCard, { backgroundColor: COLORS.surfaceDark }]}>
             <Text style={[styles.streakNumber, { color: '#f59e0b' }]}>
               {currentStreak}
             </Text>
@@ -191,7 +193,7 @@ const ProgressScreen = () => {
         </View>
 
         {/* Reading Insights */}
-        <View style={[styles.insightCard, { backgroundColor: theme.secondaryColor }]}>
+        <View style={[styles.insightCard, { backgroundColor: COLORS.surfaceDark }]}>
           <Ionicons name="bulb" size={24} color={theme.accentColor} />
           <Text style={[styles.insightText, { color: theme.textColor }]}>
             {stats.currentlyReading > 0
@@ -202,7 +204,7 @@ const ProgressScreen = () => {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 120,
   },
   section: {
     marginBottom: 32,
@@ -224,14 +226,15 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
     marginLeft: 8,
+    fontFamily: FONTS.medium,
   },
   streakCard: {
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 16,
+    borderRadius: BORDER_RADIUS.lg,
   },
   streakNumber: {
     fontSize: 56,
@@ -241,11 +244,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 8,
     opacity: 0.8,
+    fontFamily: FONTS.regular,
   },
   streakGoal: {
     fontSize: 14,
     marginTop: 4,
     opacity: 0.6,
+    fontFamily: FONTS.medium,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -269,12 +274,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: FONTS.bold,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
     opacity: 0.7,
+    fontFamily: FONTS.medium,
     textAlign: 'center',
   },
   masteredItem: {
@@ -289,12 +295,12 @@ const styles = StyleSheet.create({
   },
   masteredTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: FONTS.bold,
     marginBottom: 4,
   },
   masteredMeta: {
     fontSize: 12,
-    fontWeight: '500',
+    fontFamily: FONTS.medium,
   },
   emptyState: {
     alignItems: 'center',
@@ -302,12 +308,13 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: FONTS.bold,
     marginTop: 12,
   },
   emptySubtext: {
     fontSize: 14,
     marginTop: 4,
+    fontFamily: FONTS.medium,
   },
   insightCard: {
     flexDirection: 'row',
@@ -320,6 +327,8 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 14,
     lineHeight: 20,
+    fontFamily: FONTS.medium,
+    opacity: 0.6,
   },
 });
 

@@ -30,7 +30,7 @@ export default function App() {
         'Serif-Regular': require('./assets/fonts/Serif-Regular.ttf'),
         'Serif-Medium': require('./assets/fonts/Serif-Medium.ttf'),
         'Serif-Italic': require('./assets/fonts/Serif-Italic.ttf'),
-        'Serif-Bold-Italic': require('./assets/fonts/Serif-Bold-Italic.ttf'),
+        'Serif-Bold': require('./assets/fonts/Serif-Bold.ttf'),
       });
 
       // Request notification permissions

@@ -45,15 +45,11 @@ export const FONTS = {
   // Font Families
   regular: 'SFPro-Regular',
   medium: 'SFPro-Medium',
-  semiBold: 'SFPro-Semibold',
   bold: 'SFPro-Bold',
   
   // Reading Font
-  serif: 'SourceSerif-Regular',
-  serifBold: 'SourceSerif-Bold',
-  
-  // System Fallback
-  system: 'System',
+  serif: 'Serif-Regular',
+  serifBold: 'Serif-Bold',
 };
 
 export const FONT_SIZES = {

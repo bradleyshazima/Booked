@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../theme';
 
 // Import screens
 import LibraryScreen from '../screens/LibraryScreen';
@@ -9,49 +9,38 @@ import UploadScreen from '../screens/UploadScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 import ReadingScreen from '../screens/ReadingScreen';
 
+// Import custom tab bar
+import LiquidGlassTabBar from '../components/LiquidGlassTabBar';
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Tab Navigator Component
+// Tab Navigator Component with Liquid Glass Tab Bar
 const TabNavigator = () => {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === 'Library') {
-            iconName = focused ? 'library' : 'library-outline';
-          } else if (route.name === 'Upload') {
-            iconName = focused ? 'add-circle' : 'add-circle-outline';
-          } else if (route.name === 'Progress') {
-            iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-          }
-
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: '#6366f1',
-        tabBarInactiveTintColor: '#9ca3af',
-        tabBarStyle: {
-          backgroundColor: '#1a1a1a',
-          borderTopColor: '#374151',
-          paddingBottom: 5,
-          height: 60,
-        },
+      tabBar={(props) => <LiquidGlassTabBar {...props} />}
+      screenOptions={{
         headerStyle: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: 'transparent',
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 0,
         },
-        headerTintColor: '#ffffff',
+        headerTintColor: COLORS.textInverse,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
-      })}
+        headerTransparent: true,
+        headerBackground: () => null,
+      }}
     >
       <Tab.Screen 
         name="Library" 
         component={LibraryScreen}
         options={{
-          title: 'My Library',
+          title: 'Library',
+          headerShown: true,
         }}
       />
       <Tab.Screen 
@@ -59,29 +48,27 @@ const TabNavigator = () => {
         component={UploadScreen}
         options={{
           title: 'Add Book',
-          tabBarIconStyle: {
-            marginTop: -10,
-          },
         }}
       />
       <Tab.Screen 
         name="Progress" 
         component={ProgressScreen}
         options={{
-          title: 'Stats & Streaks',
+          title: 'Stats',
         }}
       />
     </Tab.Navigator>
   );
 };
 
-// Main App Navigator with Stack for full-screen modals
+// Main App Navigator
 const AppNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
         presentation: 'card',
+        cardStyle: { backgroundColor: 'transparent' },
       }}
     >
       <Stack.Screen 

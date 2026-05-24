@@ -3,17 +3,35 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, FONT_SIZES, SPACING, BORDER_RADIUS, SHADOWS } from '../theme';
 
-const BookCard = ({ book, onPress }) => {
+const BookCard = ({ book, onPress, onLongPress, selectionMode, isSelected }) => {
   const progress = book.total_chapters > 0 
     ? Math.round((book.last_read_index / book.total_chapters) * 100) 
     : 0;
 
   return (
     <TouchableOpacity 
-      style={styles.card} 
+      style={[
+        styles.card,
+        { backgroundColor: COLORS.surface },
+        isSelected && styles.selectedCard,
+        isSelected && { borderColor: COLORS.accent, borderWidth: 3 }
+      ]}
       onPress={onPress}
+      onLongPress={onLongPress}
       activeOpacity={0.7}
     >
+
+      {selectionMode && (
+        <View style={[styles.selectionIndicator, { backgroundColor: COLORS.accent }]}>
+          <Ionicons 
+            name={isSelected ? "checkmark-circle" : "ellipse-outline"} 
+            size={24} 
+            color="#ffffff" 
+          />
+        </View>
+      )}
+
+
       {/* Book Cover Placeholder */}
       <View style={styles.coverContainer}>
         <View style={[styles.cover, { backgroundColor: getBookColor(book.id) }]}>
@@ -27,12 +45,6 @@ const BookCard = ({ book, onPress }) => {
           </View>
         )}
         
-        {/* Reading Progress Indicator */}
-        {!book.is_completed && book.last_read_index > 0 && (
-          <View style={styles.progressIndicator}>
-            <View style={[styles.progressBar, { width: `${progress}%` }]} />
-          </View>
-        )}
       </View>
 
       {/* Book Info */}
@@ -84,17 +96,17 @@ const getBookColor = (id) => {
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
-    marginBottom: SPACING.base,
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     overflow: 'hidden',
     ...SHADOWS.medium,
+    height: 220,
+    width: '48%',
   },
   coverContainer: {
     position: 'relative',
     width: '100%',
-    aspectRatio: 0.7,
+    height: '60%',
   },
   cover: {
     width: '100%',
@@ -123,11 +135,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.success,
   },
   info: {
-    padding: SPACING.md,
+    padding: SPACING.sm,
+    backgroundColor: COLORS.surface,
+    marginBottom: SPACING.base,
+    height: '40%',
   },
   title: {
-    fontSize: FONT_SIZES.base,
-    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.medium,
     color: COLORS.textPrimary,
     marginBottom: SPACING.xs,
     lineHeight: FONT_SIZES.base * 1.4,

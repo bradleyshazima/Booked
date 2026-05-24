@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Modal,
-  SafeAreaView,
   StatusBar,
   Alert,
 } from 'react-native';
@@ -23,6 +22,9 @@ import { updateStreak, getStreakByDate } from '../db/db';
 import { cancelTodaysReminders } from '../utils/notificationScheduler';
 import ChapterDrawer from '../components/ChapterDrawer';
 import QuoteModal from '../components/QuoteModal';
+import { COLORS, FONTS } from '../theme/index';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 
 const ReadingScreen = ({ route, navigation }) => {
   const { bookId } = route.params;
@@ -33,7 +35,6 @@ const ReadingScreen = ({ route, navigation }) => {
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
   const [showChapterDrawer, setShowChapterDrawer] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [pagesRead, setPagesRead] = useState(0);
   
@@ -183,17 +184,18 @@ const ReadingScreen = ({ route, navigation }) => {
   const renderAllChapters = () => {
     return chapters.map((chapter, index) => (
       <View key={chapter.id} style={styles.chapterContainer}>
-        <Text style={[styles.chapterTitle, { color: theme.accentColor }]}>
+        <Text style={[styles.chapterTitle, {fontFamily: FONTS.serifBold}, { color: theme.textColor }]}>
           {chapter.title}
         </Text>
         <Text
+          selectable={true}
           style={[
             styles.chapterContent,
             {
               color: theme.textColor,
               fontSize: theme.fontSize,
               lineHeight: theme.fontSize * theme.lineHeight,
-              fontFamily: theme.fontFamily,
+              fontFamily: FONTS.serif,
             },
           ]}
         >
@@ -214,7 +216,7 @@ const ReadingScreen = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.backgroundColor }]}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: theme.backgroundColor }]}>
       <StatusBar barStyle="light-content" hidden />
       
       {/* Top Action Bar */}
@@ -228,12 +230,6 @@ const ReadingScreen = ({ route, navigation }) => {
         </Text>
 
         <View style={styles.rightActions}>
-          <TouchableOpacity
-            onPress={() => setShowSettings(!showSettings)}
-            style={styles.actionButton}
-          >
-            <Ionicons name="text" size={24} color={theme.textColor} />
-          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => setShowChapterDrawer(true)}
@@ -281,30 +277,7 @@ const ReadingScreen = ({ route, navigation }) => {
         locationIndex={scrollPosition}
         onClose={() => setShowQuoteModal(false)}
       />
-
-      {/* Simple Settings Modal */}
-      <Modal
-        visible={showSettings}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowSettings(false)}
-      >
-        <TouchableOpacity
-          style={styles.settingsOverlay}
-          activeOpacity={1}
-          onPress={() => setShowSettings(false)}
-        >
-          <View style={[styles.settingsCard, { backgroundColor: theme.secondaryColor }]}>
-            <Text style={[styles.settingsTitle, { color: theme.textColor }]}>
-              Reading Settings
-            </Text>
-            <Text style={[styles.settingsInfo, { color: theme.textColor }]}>
-              Font customization coming soon!
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
@@ -319,14 +292,16 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
+    fontFamily: FONTS.medium,
   },
   actionBar: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    paddingBottom: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#374151',
+    borderBottomColor: COLORS.borderDark,
+    height: 80,
   },
   actionButton: {
     padding: 8,
@@ -334,29 +309,32 @@ const styles = StyleSheet.create({
   bookTitle: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: FONTS.bold,
     marginHorizontal: 12,
+    marginBottom: 10,
   },
   rightActions: {
     flexDirection: 'row',
   },
   scrollView: {
     flex: 1,
+    fontFamily: FONTS.serif,
   },
   contentContainer: {
     padding: 20,
     paddingBottom: 100,
+    fontFamily: FONTS.serif,
   },
   chapterContainer: {
     marginBottom: 40,
   },
   chapterTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
     marginBottom: 20,
   },
   chapterContent: {
     lineHeight: 28,
+    fontFamily: FONTS.serif,
   },
   floatingButton: {
     position: 'absolute',

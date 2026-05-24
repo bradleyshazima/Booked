@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '90%',
     maxWidth: 500,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.surfaceDark,
     borderRadius: BORDER_RADIUS.xl,
     overflow: 'hidden',
     ...SHADOWS.large,
@@ -149,8 +149,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -168,7 +166,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FONT_SIZES.xl,
     fontFamily: FONTS.bold,
-    color: COLORS.textPrimary,
+    color: COLORS.textInverse,
   },
   closeButton: {
     padding: SPACING.xs,
@@ -179,19 +177,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: FONT_SIZES.base,
     fontFamily: FONTS.medium,
-    color: COLORS.textPrimary,
+    color: COLORS.textInverse,
     marginBottom: SPACING.md,
   },
   input: {
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.backgroundDark,
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.base,
     fontSize: FONT_SIZES.base,
     fontFamily: FONTS.regular,
-    color: COLORS.textPrimary,
+    color: COLORS.textInverse,
     minHeight: 140,
-    borderWidth: 1,
-    borderColor: COLORS.border,
     marginBottom: SPACING.md,
   },
   hint: {
@@ -212,8 +208,6 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     padding: SPACING.lg,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
     gap: SPACING.md,
   },
   cancelButton: {
@@ -227,8 +221,8 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: FONT_SIZES.base,
-    fontFamily: FONTS.semiBold,
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.medium,
+    color: COLORS.textInverse,
   },
   saveButton: {
     flex: 1,
@@ -245,7 +239,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: FONT_SIZES.base,
-    fontFamily: FONTS.semiBold,
+    fontFamily: FONTS.medium,
     color: COLORS.textInverse,
   },
 });

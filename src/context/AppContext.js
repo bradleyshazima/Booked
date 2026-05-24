@@ -12,7 +12,7 @@ export const useApp = () => {
   return context;
 };
 
-export const AppProvider = ({ children }) => {
+export const AppProvider = ({ children, onReady }) => {
   // Theme state
   const [theme, setTheme] = useState({
     backgroundColor: '#1a1a1a',
@@ -41,8 +41,18 @@ export const AppProvider = ({ children }) => {
         await initDatabase();
         setDbInitialized(true);
         console.log('Database initialized successfully');
+        
+        // Notify App.js that we're ready
+        if (onReady) {
+          await onReady();
+        }
       } catch (error) {
         console.error('Database initialization error:', error);
+        // Still set as initialized to allow app to load
+        setDbInitialized(true);
+        if (onReady) {
+          await onReady();
+        }
       }
     };
     
@@ -51,6 +61,8 @@ export const AppProvider = ({ children }) => {
 
   // Load saved preferences
   useEffect(() => {
+    if (!dbInitialized) return;
+    
     const loadPreferences = async () => {
       try {
         const savedTheme = await AsyncStorage.getItem('theme');
@@ -69,7 +81,7 @@ export const AppProvider = ({ children }) => {
     };
     
     loadPreferences();
-  }, []);
+  }, [dbInitialized]);
 
   // Save theme preference
   const updateTheme = async (newTheme) => {
@@ -128,6 +140,11 @@ export const AppProvider = ({ children }) => {
     calculateStreak,
     dbInitialized,
   };
+
+  // Don't render children until database is initialized
+  if (!dbInitialized) {
+    return null;
+  }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

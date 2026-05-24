@@ -1,182 +1,183 @@
-import * as FileSystem from 'expo-file-system';
-import { extractText } from 'expo-pdf-text-extract';
+// pdfExtractor.js (now handles EPUB)
+import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
+import JSZip from 'jszip';
+import { DOMParser } from '@xmldom/xmldom';
 
-// Parse extracted text into structured chapters
-const parseTextIntoChapters = (rawText) => {
-  const chapters = [];
+// Parse content.opf to get the reading order and manifest
+const parseContentOPF = (opfContent) => { 
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(opfContent, 'text/xml');
   
-  // Split text into lines for analysis
-  const lines = rawText.split('\n');
+  // Get manifest items (all files in the EPUB)
+  const manifest = {};
+  const manifestItems = xmlDoc.getElementsByTagName('item');
+  for (let item of manifestItems) {
+    const id = item.getAttribute('id');
+    const href = item.getAttribute('href');
+    const mediaType = item.getAttribute('media-type');
+    manifest[id] = { href, mediaType };
+  }
   
-  let currentChapter = null;
-  let chapterIndex = 0;
-  let contentBuffer = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    if (!line) continue;
-    
-    // Detect chapter headings using multiple patterns
-    const isChapterHeading = 
-      /^(chapter|ch\.?)\s+\d+/i.test(line) ||
-      /^(part|section)\s+\d+/i.test(line) ||
-      /^\d+\.\s+[A-Z]/.test(line) ||
-      (line.length < 100 && line === line.toUpperCase() && line.length > 3);
-    
-    if (isChapterHeading) {
-      // Save previous chapter if exists
-      if (currentChapter) {
-        currentChapter.content = contentBuffer.join('\n\n');
-        chapters.push(currentChapter);
-      }
-      
-      // Start new chapter
-      currentChapter = {
-        chapter_index: chapterIndex++,
-        title: line,
-        content: ''
-      };
-      contentBuffer = [];
-    } else {
-      // Add to current chapter content
-      contentBuffer.push(line);
+  // Get spine (reading order)
+  const spine = [];
+  const spineItems = xmlDoc.getElementsByTagName('itemref');
+  for (let item of spineItems) {
+    const idref = item.getAttribute('idref');
+    if (manifest[idref]) {
+      spine.push(manifest[idref].href);
     }
   }
   
-  // Add the last chapter
-  if (currentChapter) {
-    currentChapter.content = contentBuffer.join('\n\n');
-    chapters.push(currentChapter);
-  }
+  return { manifest, spine };
+};
+
+// Parse toc.ncx to get chapter titles
+const parseTocNCX = (tocContent) => {
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(tocContent, 'text/xml');
   
-  // If no chapters detected, create single chapter with all content
-  if (chapters.length === 0) {
-    chapters.push({
-      chapter_index: 0,
-      title: 'Full Text',
-      content: rawText
-    });
+  const navPoints = xmlDoc.getElementsByTagName('navPoint');
+  const chapters = [];
+  
+  for (let i = 0; i < navPoints.length; i++) {
+    const navPoint = navPoints[i];
+    const textNode = navPoint.getElementsByTagName('text')[0];
+    const contentNode = navPoint.getElementsByTagName('content')[0];
+    
+    if (textNode && contentNode) {
+      chapters.push({
+        title: textNode.textContent.trim(),
+        src: contentNode.getAttribute('src')
+      });
+    }
   }
   
   return chapters;
 };
 
-// Enhanced text cleaning and formatting
-const cleanAndFormatText = (text) => {
-  // Remove image references and metadata
-  text = text.replace(/\[Image:.*?\]/g, '');
-  text = text.replace(/\[Fig\.?\s+\d+.*?\]/gi, '');
+// Clean HTML content for display
+const cleanHTMLContent = (html) => {
+  // Remove script tags
+  html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
   
-  // Clean up excessive whitespace
-  text = text.replace(/\n{3,}/g, '\n\n');
-  text = text.replace(/[ \t]{2,}/g, ' ');
+  // Remove style tags
+  html = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
   
-  // Detect and format lists
-  text = formatLists(text);
+  // Remove HTML tags but keep the text
+  let text = html.replace(/<[^>]+>/g, ' ');
   
-  // Detect and format headings/subheadings
-  text = formatHeadings(text);
+  // Decode HTML entities
+  text = text.replace(/&nbsp;/g, ' ')
+             .replace(/&amp;/g, '&')
+             .replace(/&lt;/g, '<')
+             .replace(/&gt;/g, '>')
+             .replace(/&quot;/g, '"')
+             .replace(/&#39;/g, "'");
   
-  return text.trim();
+  // Clean up whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+  
+  // Add proper paragraph breaks
+  text = text.replace(/\. ([A-Z])/g, '.\n\n$1');
+  
+  return text;
 };
 
-// Format detected lists (bulleted and numbered)
-const formatLists = (text) => {
-  const lines = text.split('\n');
-  const formatted = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    // Detect bulleted lists
-    if (/^[•·‣▪▫○●∙⦿⦾]\s+/.test(line)) {
-      formatted.push('  • ' + line.replace(/^[•·‣▪▫○●∙⦿⦾]\s+/, ''));
-      continue;
-    }
-    
-    // Detect numbered lists
-    if (/^\d+[.)\]:]\s+/.test(line)) {
-      formatted.push('  ' + line);
-      continue;
-    }
-    
-    // Detect alphabetic lists
-    if (/^[a-z][.)\]]\s+/i.test(line)) {
-      formatted.push('  ' + line);
-      continue;
-    }
-    
-    formatted.push(line);
-  }
-  
-  return formatted.join('\n');
-};
-
-// Format headings and subheadings based on context
-const formatHeadings = (text) => {
-  const lines = text.split('\n');
-  const formatted = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    const nextLine = i < lines.length - 1 ? lines[i + 1].trim() : '';
-    const prevLine = i > 0 ? lines[i - 1].trim() : '';
-    
-    // Skip empty lines
-    if (!line) {
-      formatted.push('');
-      continue;
-    }
-    
-    // Detect headings (short lines, capitalized, followed by content)
-    const isHeading = 
-      line.length < 80 &&
-      line === line.toUpperCase() &&
-      line.length > 3 &&
-      nextLine &&
-      nextLine !== nextLine.toUpperCase();
-    
-    // Detect subheadings (title case, short, followed by content)
-    const isSubheading = 
-      line.length < 80 &&
-      /^[A-Z][a-z]+/.test(line) &&
-      !line.endsWith('.') &&
-      !line.endsWith(',') &&
-      nextLine &&
-      !prevLine;
-    
-    if (isHeading) {
-      formatted.push('\n## ' + line + '\n');
-    } else if (isSubheading) {
-      formatted.push('\n### ' + line + '\n');
-    } else {
-      formatted.push(line);
-    }
-  }
-  
-  return formatted.join('\n');
-};
-
-// Main PDF extraction function
+// Main EPUB extraction function
 export const extractPdfText = async (fileUri) => {
   try {
-    console.log('Extracting PDF from:', fileUri);
+    console.log('Original EPUB URI:', fileUri);
     
-    // Extract raw text from PDF
-    const rawText = await extractText({ uri: fileUri });
+    // 1. Copy to safe location
+    const tempFileName = `processing_${Date.now()}.epub`;
+    const safeUri = await copyFileToAppDirectory(fileUri, tempFileName);
+    console.log('Copied to safe storage:', safeUri);
     
-    if (!rawText || rawText.trim().length === 0) {
-      throw new Error('No text could be extracted from the PDF');
+    // 2. Read the EPUB file as base64
+    const epubBase64 = await FileSystem.readAsStringAsync(safeUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    
+    // 3. Unzip the EPUB
+    const zip = new JSZip();
+    const epubZip = await zip.loadAsync(epubBase64, { base64: true });
+    
+    // 4. Find and parse container.xml to locate content.opf
+    const containerXML = await epubZip.file('META-INF/container.xml').async('string');
+    const containerDoc = new DOMParser().parseFromString(containerXML, 'text/xml');
+    const rootfile = containerDoc.getElementsByTagName('rootfile')[0];
+    const opfPath = rootfile.getAttribute('full-path');
+    
+    // Get the base directory (e.g., "OEBPS/" or "")
+    const baseDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
+    
+    // 5. Parse content.opf
+    const opfContent = await epubZip.file(opfPath).async('string');
+    const { spine } = parseContentOPF(opfContent);
+    
+    // 6. Try to parse toc.ncx for chapter titles
+    let tocChapters = [];
+    try {
+      const tocPath = baseDir + 'toc.ncx';
+      if (epubZip.file(tocPath)) {
+        const tocContent = await epubZip.file(tocPath).async('string');
+        tocChapters = parseTocNCX(tocContent);
+      }
+    } catch (tocError) {
+      console.log('No toc.ncx found, using spine order');
     }
     
-    // Clean and format the text
-    const cleanedText = cleanAndFormatText(rawText);
+    // 7. Extract content from each chapter in the spine
+    const chapters = [];
     
-    // Parse into structured chapters
-    const chapters = parseTextIntoChapters(cleanedText);
+    for (let i = 0; i < spine.length; i++) {
+      const chapterPath = baseDir + spine[i].split('#')[0]; // Remove fragment identifier
+      
+      try {
+        const chapterFile = epubZip.file(chapterPath);
+        if (!chapterFile) {
+          console.log(`Skipping missing file: ${chapterPath}`);
+          continue;
+        }
+        
+        const htmlContent = await chapterFile.async('string');
+        const textContent = cleanHTMLContent(htmlContent);
+        
+        // Skip if content is too short (likely metadata pages)
+        if (textContent.length < 100) {
+          continue;
+        }
+        
+        // Find matching title from TOC
+        let title = `Chapter ${chapters.length + 1}`;
+        const matchingToc = tocChapters.find(toc => 
+          spine[i].includes(toc.src.split('#')[0])
+        );
+        if (matchingToc) {
+          title = matchingToc.title;
+        }
+        
+        chapters.push({
+          chapter_index: chapters.length,
+          title: title,
+          content: textContent
+        });
+        
+      } catch (fileError) {
+        console.log(`Error reading chapter ${chapterPath}:`, fileError);
+        continue;
+      }
+    }
     
-    console.log(`Extracted ${chapters.length} chapters`);
+    console.log(`Extracted ${chapters.length} chapters from EPUB`);
+    
+    // 8. Cleanup
+    await FileSystem.deleteAsync(safeUri, { idempotent: true });
+    
+    if (chapters.length === 0) {
+      throw new Error('No readable chapters found in EPUB');
+    }
     
     return {
       success: true,
@@ -185,22 +186,11 @@ export const extractPdfText = async (fileUri) => {
     };
     
   } catch (error) {
-    console.error('PDF extraction error:', error);
+    console.error('EPUB extraction error:', error);
     return {
       success: false,
       error: error.message
     };
-  }
-};
-
-// Get file info
-export const getFileInfo = async (uri) => {
-  try {
-    const fileInfo = await FileSystem.getInfoAsync(uri);
-    return fileInfo;
-  } catch (error) {
-    console.error('Error getting file info:', error);
-    return null;
   }
 };
 
@@ -216,5 +206,16 @@ export const copyFileToAppDirectory = async (sourceUri, filename) => {
   } catch (error) {
     console.error('Error copying file:', error);
     throw error;
+  }
+};
+
+// Get file info
+export const getFileInfo = async (uri) => {
+  try {
+    const fileInfo = await FileSystem.getInfoAsync(uri);
+    return fileInfo;
+  } catch (error) {
+    console.error('Error getting file info:', error);
+    return null;
   }
 };
